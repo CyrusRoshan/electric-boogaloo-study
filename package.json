@@ -29,6 +29,7 @@
     "koa": "^1.2.4",
     "menubar": "^4.0.2",
     "node-notifier": "^4.6.1",
+    "serialport": "^4.0.3",
     "text-statistics": "^0.1.1"
   }
 }

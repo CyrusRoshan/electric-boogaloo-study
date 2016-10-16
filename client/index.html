@@ -1,0 +1,84 @@
+<body>
+  <div>
+    <div class='top'>
+      <canvas id='windowGraph'></canvas>
+      <canvas id='chromeGraph'></canvas>
+    </div>
+    <div class='bottom'>
+      <canvas id='handGraph'></canvas>
+      <canvas id='productivityGraph'></canvas>
+    </div>
+  </div>
+
+  <style>
+    .top canvas {
+      width: 30%;
+      float: left !important;
+    }
+
+    html {
+      background-color: rgb(253, 255, 244);
+    }
+  </style>
+  <!-- <script src='./chart.min.js'></script> -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.js"></script>
+  <script>
+    const ipcRenderer = require('electron').ipcRenderer;
+
+    Chart.defaults.global.responsive = false;
+    Chart.defaults.global.animation.duration = 20;
+    Chart.defaults.global.animation.easing = 'easeInExpo';
+
+    var windowGraph = new Chart(document.getElementById('windowGraph'), {
+      type: 'doughnut',
+      data: {
+        labels: ["Unproductive", "Neutral", "Productive"],
+        datasets: [{
+          data: [],
+          backgroundColor: ["#FF6384", "#FFCE56", "#12b414"],
+          hoverBackgroundColor: ["#FF6384", "#FFCE56", "#12b414"],
+        }]
+      },
+      options: {
+          title: {
+              display: true,
+              text: 'Window Graph'
+          }
+      }
+    });
+
+    var chromeGraph = new Chart(document.getElementById('chromeGraph'), {
+      type: 'doughnut',
+      data: {
+        labels: ["Unproductive", "Neutral", "Productive"],
+        datasets: [{
+          data: [],
+          backgroundColor: ["#FF6384", "#FFCE56", "#12b414"],
+          hoverBackgroundColor: ["#FF6384", "#FFCE56", "#12b414"],
+        }]
+      },
+      options: {
+          title: {
+              display: true,
+              text: 'Chrome Tab Graph'
+          }
+      }
+    });
+
+    ipcRenderer.on('data', (event, dataArray) => {
+      var newDataset = [0, 0, 0];
+      for (var i = 0; i < dataArray.length; i++) {
+        newDataset[JSON.parse(dataArray[i]).windowProductivity + 1]++
+      }
+      windowGraph.data.datasets[0].data = newDataset
+      windowGraph.update();
+
+      newDataset = [0, 0, 0];
+      for (var i = 0; i < dataArray.length; i++) {
+        newDataset[JSON.parse(dataArray[i]).chromeProductivity + 1]++
+      }
+      chromeGraph.data.datasets[0].data = newDataset
+      chromeGraph.update();
+    })
+  </script>
+</body>

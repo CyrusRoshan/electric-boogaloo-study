@@ -1,3 +1,5 @@
+const exec = require('child_process').exec;
+
 const textStats = require('text-statistics')
 const activeWin = require('active-win')
 const utils = require('./utils')
@@ -24,9 +26,9 @@ const iconYellow = path.join(__dirname, 'iconYellow.png')
 var mb = menubar({
   icon: icon,
   preloadWindow: true,
-  width: 700,
-  height: 500,
-  transparent: true,
+  width: 630,
+  height: 200,
+  transparent: false,
   resizable: false,
   index: 'file://' + path.join(__dirname, 'client', 'index.html'),
 })
@@ -37,6 +39,7 @@ var settings = {
 }
 
 var data = {};
+var dataArray = [];
 
 mb.on('ready', () => {
   mb.tray.setToolTip('Electric Boogaloo')
@@ -45,6 +48,8 @@ mb.on('ready', () => {
     var contextMenu = Menu.buildFromTemplate([
       {label: 'Shock when distracted', type: 'checkbox', checked: settings.shock, click: () => {settings.shock = !settings.shock}},
       {label: 'Alert when distracted', type: 'checkbox', checked: settings.alert, click: () => {settings.alert = !settings.alert}},
+      {type: 'separator'},
+      {label: 'Reset Data', click: () => {dataArray = []}},
       {type: 'separator'},
       {label: 'Exit', click: () => {app.quit()}},
     ])
@@ -56,28 +61,41 @@ mb.on('ready', () => {
       data.app = window.app.toLowerCase()
       data.chrome = data.app.includes('chrome')
 
-      data.productivity = 0;
+      data.windowProductivity = 0;
       if (utils.windowBlacklist.some(blacklisted => data.app.includes(blacklisted))) {
-        data.productivity = -1;
+        data.windowProductivity = -1;
       } else if (utils.windowWhitelist.some(whitelisted => data.app.includes(whitelisted))) {
-        data.productivity = 1;
+        data.windowProductivity = 1;
       }
     });
 
-    if (data.productivity == -1) {
+    var cmd;
+    if ((!data.chrome && data.windowProductivity == -1) || (data.chrome && data.chromeProductivity == -1)) {
+      cmd = `echo 'Y' > /dev/cu.usbmodem1411`
       mb.tray.setImage(iconYellow)
 
       if (settings.alert) {
         utils.alert('ELECTRIC BOOGALOO', 'BACK TO WORK!', iconYellow)
       }
-    } else if (data.productivity == 0) {
+    } else if ((!data.chrome && data.windowProductivity == 0) || (data.chrome && data.chromeProductivity == 0)) {
+      cmd = `echo 'N' > /dev/cu.usbmodem1411`
       mb.tray.setImage(icon)
     } else {
+      cmd = `echo 'N' > /dev/cu.usbmodem1411`
       mb.tray.setImage(iconGreen)
     }
-    // send to ipc
+
+    exec(cmd, function(error, stdout, stderr) {
+      // console.log(error, stdout, stderr);
+    });
+
+    dataArray.push(JSON.stringify(data));
+    console.log(data);
+    mb.window.webContents.send('data', dataArray);
   }, 1000);
 })
+
+
 
 koaApp.use(function *(next){
   if (!data.chrome || this.method !== 'POST') {
@@ -92,14 +110,12 @@ koaApp.use(function *(next){
     var stats = textStats(body.text)
     data.combinedStats = (stats.colemanLiauIndex() + stats.fleschKincaidGradeLevel()) / 2
 
-    data.productivity = 0;
+    data.chromeProductivity = 0;
     if (utils.urlBlacklist.some(blacklisted => body.url.toLowerCase().includes(blacklisted))) {
-      data.productivity = -1;
+      data.chromeProductivity = -1;
     } else if (utils.urlWhitelist.some(whitelisted => body.url.toLowerCase().includes(whitelisted))){
-      data.productivity = 1;
+      data.chromeProductivity = 1;
     }
-
-    mb.window.webContents.send('data', data);
   } catch (e) {
     console.log(e)
   }

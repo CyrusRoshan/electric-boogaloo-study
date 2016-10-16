@@ -27,6 +27,8 @@ module.exports = {
     'wikipedia.org',
     'github.com',
     'docs.google.com',
+    'stackoverflow.com',
+    'developer.mozilla.org',
   ],
 
   windowBlacklist: [
