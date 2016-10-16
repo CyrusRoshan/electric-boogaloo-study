@@ -1,0 +1,34 @@
+{
+  "name": "Electric-Boogaloo",
+  "version": "1.0.0",
+  "description": "how to study part 2: electric boogaloo",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CyrusRoshan/electric-boogaloo.git"
+  },
+  "keywords": [
+    "electric-boogaloo",
+    "electroshock therapy",
+    "studying",
+    "disclaimer"
+  ],
+  "author": "Cyrus Roshan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CyrusRoshan/electric-boogaloo/issues"
+  },
+  "homepage": "https://github.com/CyrusRoshan/electric-boogaloo#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "active-win": "^0.3.0",
+    "co-body": "^4.2.0",
+    "koa": "^1.2.4",
+    "menubar": "^4.0.2",
+    "node-notifier": "^4.6.1",
+    "text-statistics": "^0.1.1"
+  }
+}
